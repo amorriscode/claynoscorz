@@ -11,6 +11,7 @@ import { Metaplex } from '@metaplex-foundation/js'
 
 import { postThread } from './services/twitter'
 import { SOLANA_FM_URL } from './constants'
+import { getSolPrice } from './services/solana'
 
 const HOST = process.env.HOST || 'http://localhost'
 const PORT = process.env.PORT || 3000
@@ -24,6 +25,7 @@ const metaplex = new Metaplex(connection)
 
 app.post('/helios', async (req, res) => {
   const webhooks = req.body || []
+  const solPrice = await getSolPrice()
 
   for (const webhook of webhooks) {
     const nftData = webhook?.events?.nft
@@ -45,7 +47,12 @@ app.post('/helios', async (req, res) => {
     const nftImage = nft?.json?.image
 
     // Build the main tweet which shares sales data
-    const saleTweet = [`RAAAWR 🦖\n\n${id} sold for ${amount} ◎`]
+    const saleTweet = [`RAAAWR 🦖\n\n${id} sold for ◎${amount}`]
+
+    // Add the USD price if available
+    if (solPrice) {
+      saleTweet.push(` ($${amount * solPrice} USD)`)
+    }
 
     // Add the marketplace
     if (nftData.source) {
@@ -66,7 +73,7 @@ app.post('/helios', async (req, res) => {
     // Build the second tweet which links to transactions and the token address
     const solanaFmTweet = []
     if (nftAddress) {
-      solanaFmTweet.push(`Token: ${SOLANA_FM_URL}/token/${nftAddress}`)
+      solanaFmTweet.push(`Token: ${SOLANA_FM_URL}/address/${nftAddress}`)
     }
     solanaFmTweet.push(`Transaction: ${SOLANA_FM_URL}/tx/${nftData.signature}`)
 
