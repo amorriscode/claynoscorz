@@ -53,7 +53,7 @@ app.post('/helios', async (req, res) => {
         .split('_')
         .map((w: string) => w[0].toUpperCase() + w.substring(1).toLowerCase())
         .join(' ')
-      saleTweet.push(`on ${marketplace} `)
+      saleTweet.push(` on ${marketplace} `)
     }
 
     saleTweet.push('#SeizeTheClay')
