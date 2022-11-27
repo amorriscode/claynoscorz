@@ -85,6 +85,10 @@ app.post('/helios', async (req, res) => {
   res.send('ok')
 })
 
+app.get('/health', (req, res) => {
+  res.send('ok')
+})
+
 app.listen(PORT, () => {
   console.log(`🚀 Claynoscores listening on ${HOST}:${PORT}`)
 })
