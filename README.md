@@ -1,5 +1,5 @@
 <div align="center">
-  <img height="160x" src="https://pbs.twimg.com/profile_images/1596741167961755650/G6-yx-Ri_400x400.jpg" />
+  <img height="160x" src="https://pbs.twimg.com/profile_images/1596741167961755650/G6-yx-Ri_400x400.jpg" style="border-radius: 100%;" />
 
   <h1>Claynoscores</h1>
 
