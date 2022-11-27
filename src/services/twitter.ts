@@ -21,7 +21,7 @@ export async function postTweet({
       auto_populate_reply_metadata: true,
     })
   } catch (error) {
-    console.error(`Failed to post tweet: ${error}`)
+    console.error(`Failed to post tweet: ${JSON.stringify(error, null, 2)}`)
   }
 }
 
@@ -36,6 +36,6 @@ export async function postThread({ tweets }: { tweets: string[] }) {
       lastTweetId = savedTweet?.id_str
     }
   } catch (error) {
-    console.error(`Failed to post tweet:`, JSON.stringify(error, null, 2))
+    console.error(`Failed to post thread: ${JSON.stringify(error, null, 2)}`)
   }
 }
