@@ -51,7 +51,7 @@ app.post('/helios', async (req, res) => {
 
     // Add the USD price if available
     if (solPrice) {
-      saleTweet.push(` ($${amount * solPrice} USD)`)
+      saleTweet.push(` ($${(amount * solPrice).toFixed(2)} USD)`)
     }
 
     // Add the marketplace
