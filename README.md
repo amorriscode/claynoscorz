@@ -1,14 +1,14 @@
 <div align="center">
-  <img height="160x" src="https://pbs.twimg.com/profile_images/1596741167961755650/G6-yx-Ri_400x400.jpg" style="border-radius: 100%;" />
+  <img height="160x" src="https://user-images.githubusercontent.com/16005567/204155023-4ee739e0-f204-4dd6-b750-17b6395ef58e.png" />
 
-  <h1>Claynoscores</h1>
+  <h1>Claynoscorz</h1>
 
   <p>
     <strong>A Claynosaurz Twitter sales bot</strong>
   </p>
 </div>
 
-[Claynosaurz](https://claynosaurz.com/) is a 10k pfp project built on [Solana](https://solana.com/). Any time a Claynosaurz purchase is made, this bot will [tweet about it](https://twitter.com/claynoscores).
+[Claynosaurz](https://claynosaurz.com/) is a 10k pfp project built on [Solana](https://solana.com/). Any time someone scores a Claynosaur (a sale is made), this bot will [tweet about it](https://twitter.com/claynoscores).
 
 ## Getting Started
 
