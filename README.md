@@ -1,5 +1,5 @@
 <div align="center">
-  <h1>🦖</h1>
+  <img height="160x" src="https://pbs.twimg.com/profile_images/1596741167961755650/G6-yx-Ri_400x400.jpg" />
 
   <h1>Claynoscores</h1>
 
