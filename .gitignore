@@ -30,3 +30,6 @@ dist/
 
 # misc
 .DS_Store
+
+# Example Helios webhook JSON
+response.json
