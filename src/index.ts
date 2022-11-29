@@ -68,7 +68,7 @@ app.post('/helius', async (req, res) => {
     // Add an image if found
     let mediaId
     if (nftImage) {
-      mediaId = await uploadImage(nftImage)
+      // mediaId = await uploadImage(nftImage)
     }
 
     try {
