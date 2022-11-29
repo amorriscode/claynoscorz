@@ -2,6 +2,9 @@ import fetch from 'node-fetch'
 import crypto from 'crypto'
 import OAuth from 'oauth-1.0a'
 import querystring from 'query-string'
+import { Readable } from 'stream'
+
+const MAX_FILE_CHUNK = 5 * 1024 * 1024
 
 const CONFIG = {
   consumerKey: process.env.TWITTER_API_KEY || '',
@@ -36,25 +39,19 @@ function createOauthClient() {
 
 async function post(url: string, data: any = {}, headers: any = {}) {
   const method = 'POST'
-  const isFormData = headers['Content-Type'] === 'multipart/form-data'
   const requestData = { url, method, data }
   const oauthClient = createOauthClient()
-
-  if (isFormData) {
-    delete requestData.data
-  }
 
   const requestHeaders = {
     ...headers,
     ...oauthClient.toHeader(oauthClient.authorize(requestData, CONFIG.token)),
   }
 
-  if (isFormData) {
-    console.log(data)
+  if (headers['Content-Type'] === 'application/x-www-form-urlencoded') {
     return await fetch(url, {
       method,
       headers: requestHeaders,
-      body: data,
+      body: querystring.stringify(data),
     })
   }
 
@@ -72,14 +69,13 @@ export async function postTweet({
   mediaId?: string
 }) {
   const body: { status: string; media_ids?: string } = { status }
-  // if (mediaId) {
-  //   body.media_ids = mediaId
-  // }
+  if (mediaId) {
+    body.media_ids = mediaId
+  }
 
   return await post(getTwitterUrl({ endpoint: 'statuses/update.json' }), body)
 }
 
-// TODO: debug image uploads
 export async function uploadImage(sourceUrl: string) {
   try {
     const twitterUrl = getTwitterUrl({
@@ -98,24 +94,35 @@ export async function uploadImage(sourceUrl: string) {
     const data = await initResponse.json()
     const mediaId = data.media_id_string
 
-    const appendResponse = await post(
-      twitterUrl,
-      {
-        command: 'APPEND',
-        media_id: mediaId,
-        media: imageBuffer,
-        media_data: imageBuffer.toString('base64'),
-        segment_index: 0,
-      },
-      { 'Content-Type': 'multipart/form-data' }
-    )
-    console.log(appendResponse)
+    const readable = Readable.from(imageBuffer)
+    let buf
+    const partitions = []
+    while (
+      (buf = readable.read(Math.min(MAX_FILE_CHUNK, imageBuffer.length)))
+    ) {
+      partitions.push(buf)
+    }
 
-    const finalizeResponse = await post(twitterUrl, {
+    for (let i = 0; i < partitions.length; i++) {
+      await post(
+        twitterUrl,
+        {
+          command: 'APPEND',
+          media_id: mediaId,
+          media_data: partitions[i].toString('base64'),
+          segment_index: i,
+        },
+        {
+          'Content-Type': 'application/x-www-form-urlencoded',
+          'Content-Transfer-Encoding': 'base64',
+        }
+      )
+    }
+
+    await post(twitterUrl, {
       command: 'FINALIZE',
       media_id: mediaId,
     })
-    console.log(finalizeResponse)
 
     return mediaId
   } catch (error) {
