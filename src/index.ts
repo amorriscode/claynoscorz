@@ -27,6 +27,8 @@ app.post('/helius', async (req, res) => {
   const webhooks = req.body || []
   const solPrice = await getSolPrice()
 
+  console.log('Received incoming webook...')
+
   for (const webhook of webhooks) {
     try {
       const nftData = webhook?.events?.nft
@@ -91,6 +93,7 @@ app.post('/helius', async (req, res) => {
     }
   }
 
+  console.log('Finished processing incoming webhook...')
   res.send('ok')
 })
 
