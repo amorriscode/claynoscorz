@@ -23,7 +23,7 @@ const postedTransactions = new Set()
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
-app.post('/helios', async (req, res) => {
+app.post('/helius', async (req, res) => {
   const webhooks = req.body || []
   const solPrice = await getSolPrice()
 
