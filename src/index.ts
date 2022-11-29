@@ -19,7 +19,6 @@ const PORT = process.env.PORT || 3000
 const app = express()
 app.use(express.json())
 
-const postedTransactions = new Set()
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
@@ -31,11 +30,7 @@ app.post('/helius', async (req, res) => {
     try {
       const nftData = webhook?.events?.nft
       if (!nftData) {
-        break
-      }
-
-      // Very simple caching to ensure we don't double post sales
-      if (postedTransactions.has(nftData.signatue)) {
+        console.log(`Missing NFT data! Skipping...`, webhook)
         break
       }
 
@@ -72,7 +67,6 @@ app.post('/helius', async (req, res) => {
 
       try {
         await postTweet({ status: tweet.join(''), mediaId })
-        postedTransactions.add(nftData.signature)
         console.log(`Succesfully posted tweet for ${nftData.signature}`)
       } catch (error) {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
