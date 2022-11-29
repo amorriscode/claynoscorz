@@ -30,20 +30,20 @@ export async function uploadImage(sourceUrl: string) {
     const imageData = await fetch(sourceUrl)
     const imageBlob = await imageData.blob()
 
-    const mediaId = await client.post('media/upload.json', {
+    const mediaId = await client.post('media/upload', {
       command: 'INIT',
       total_bytes: imageBlob.size,
       media_type: 'image/gif',
     })
 
-    await client.post('media/upload.json', {
+    await client.post('media/upload', {
       command: 'APPEND',
       media_id: mediaId,
       media_data: Buffer.from(await imageBlob.text()).toString('base64'),
       segment_index: 0,
     })
 
-    await client.post('media/upload.json', {
+    await client.post('media/upload', {
       command: 'FINALIZE',
       media_id: mediaId,
     })
