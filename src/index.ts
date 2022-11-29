@@ -9,7 +9,7 @@ import {
 } from '@solana/web3.js'
 import { Metaplex } from '@metaplex-foundation/js'
 
-import { postThread } from './services/twitter'
+import { postTweet, uploadImage } from './services/twitter'
 import { SOLANA_FM_URL } from './constants'
 import { getSolPrice } from './services/solana'
 
@@ -39,19 +39,17 @@ app.post('/helios', async (req, res) => {
     }
 
     const amount = nftData.amount / LAMPORTS_PER_SOL
-    const id =
-      nftData.description.match(/(Claynosaurz #\d+)/)?.[0] || 'A Claynosaur'
     const nftAddress = nftData?.nfts?.[0]?.mint || null
     const mintAddress = new PublicKey(nftAddress || '')
-    const nft = (await metaplex?.nfts()?.findByMint({ mintAddress })) ?? {}
+    const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
     const nftImage = nft?.json?.image
 
     // Build the main tweet which shares sales data
-    const saleTweet = [`RAAAWR 🦖\n\n${id} sold for ◎${amount}`]
+    const tweet = [`RAAAWR 🦖\n\n${nft.json?.name} sold for ◎${amount}`]
 
     // Add the USD price if available
     if (solPrice) {
-      saleTweet.push(` ($${(amount * solPrice).toFixed(2)} USD)`)
+      tweet.push(` ($${(amount * solPrice).toFixed(2)} USD)`)
     }
 
     // Add the marketplace
@@ -60,27 +58,21 @@ app.post('/helios', async (req, res) => {
         .split('_')
         .map((w: string) => w[0].toUpperCase() + w.substring(1).toLowerCase())
         .join(' ')
-      saleTweet.push(` on ${marketplace} `)
+      tweet.push(` on ${marketplace} `)
     }
 
-    saleTweet.push('#SeizeTheClay')
+    tweet.push(
+      `#SeizeTheClay\n\nTransaction: ${SOLANA_FM_URL}/tx/${nftData.signature}`
+    )
 
     // Add an image if found
+    let mediaId
     if (nftImage) {
-      saleTweet.push(`\n\n${nftImage}`)
+      mediaId = await uploadImage(nftImage)
     }
-
-    // Build the second tweet which links to transactions and the token address
-    const solanaFmTweet = []
-    if (nftAddress) {
-      solanaFmTweet.push(`Token: ${SOLANA_FM_URL}/address/${nftAddress}`)
-    }
-    solanaFmTweet.push(`Transaction: ${SOLANA_FM_URL}/tx/${nftData.signature}`)
-
-    const tweets = [saleTweet.join(''), solanaFmTweet.join('\n')]
 
     try {
-      await postThread({ tweets })
+      await postTweet({ status: tweet.join(''), mediaId })
       postedTransactions.add(nftData.signature)
     } catch (error) {
       console.error(`Failed to post tweet for ${nftData.signature}`)

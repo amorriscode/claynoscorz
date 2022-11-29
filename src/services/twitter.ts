@@ -1,4 +1,5 @@
 import Twitter from 'twitter-lite'
+import fetch from 'node-fetch'
 
 const client = new Twitter({
   consumer_key: process.env.TWITTER_API_KEY || '',
@@ -9,33 +10,48 @@ const client = new Twitter({
 
 export async function postTweet({
   status,
-  in_reply_to_status_id,
+  parentId,
+  mediaId = '',
 }: {
   status: string
-  in_reply_to_status_id?: string
+  parentId?: string
+  mediaId?: string
 }) {
-  try {
-    return await client.post('statuses/update', {
-      status,
-      in_reply_to_status_id,
-      auto_populate_reply_metadata: true,
-    })
-  } catch (error) {
-    console.error(`Failed to post tweet: ${JSON.stringify(error, null, 2)}`)
-  }
+  return await client.post('statuses/update', {
+    status,
+    in_reply_to_status_id: parentId,
+    auto_populate_reply_metadata: true,
+    media_ids: mediaId,
+  })
 }
 
-export async function postThread({ tweets }: { tweets: string[] }) {
+export async function uploadImage(sourceUrl: string) {
   try {
-    let lastTweetId = ''
-    for (const tweet of tweets) {
-      const savedTweet = await postTweet({
-        status: tweet,
-        in_reply_to_status_id: lastTweetId,
-      })
-      lastTweetId = savedTweet?.id_str
-    }
+    const imageData = await fetch(sourceUrl)
+    const imageBlob = await imageData.blob()
+
+    const mediaId = await client.post('media/upload.json', {
+      command: 'INIT',
+      total_bytes: imageBlob.size,
+      media_type: 'image/gif',
+    })
+
+    await client.post('media/upload.json', {
+      command: 'APPEND',
+      media_id: mediaId,
+      media_data: Buffer.from(await imageBlob.text()).toString('base64'),
+      segment_index: 0,
+    })
+
+    await client.post('media/upload.json', {
+      command: 'FINALIZE',
+      media_id: mediaId,
+    })
+
+    return mediaId
   } catch (error) {
-    console.error(`Failed to post thread: ${JSON.stringify(error, null, 2)}`)
+    console.error(
+      `Failed to upload image to Twitter: ${JSON.stringify(error, null, 2)}`
+    )
   }
 }
