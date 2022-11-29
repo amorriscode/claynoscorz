@@ -40,8 +40,16 @@ app.post('/helius', async (req, res) => {
         break
       }
 
-      const amount = nftData.amount / LAMPORTS_PER_SOL
       const nftAddress = nftData?.nfts?.[0]?.mint || null
+      if (!nftAddress) {
+        console.error(
+          `Failed to get NFT address for ${webhook.signature}:`,
+          nftData
+        )
+        break
+      }
+
+      const amount = nftData.amount / LAMPORTS_PER_SOL
       const mintAddress = new PublicKey(nftAddress)
       const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
       const nftImage = nft?.json?.image
