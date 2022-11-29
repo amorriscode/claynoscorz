@@ -10,7 +10,7 @@ import {
 import { Metaplex } from '@metaplex-foundation/js'
 
 import { postTweet, uploadImage } from './services/twitter'
-import { SOLANA_FM_URL } from './constants'
+import { HYPERSPACE_URL, SOLANA_FM_URL } from './constants'
 import { getSolPrice } from './services/solana'
 
 const HOST = process.env.HOST || 'http://localhost'
@@ -62,17 +62,17 @@ app.post('/helius', async (req, res) => {
     }
 
     tweet.push(
-      `#SeizeTheClay\n\nTransaction: ${SOLANA_FM_URL}/tx/${nftData.signature}`
+      `#SeizeTheClay\n\n${HYPERSPACE_URL}/token/${nft.address}`
     )
 
     // Add an image if found
     let mediaId
     if (nftImage) {
-      // mediaId = await uploadImage(nftImage)
+      mediaId = await uploadImage(nftImage)
     }
 
     try {
-      await postTweet({ status: tweet.join('') })
+      await postTweet({ status: tweet.join(''), mediaId })
       postedTransactions.add(nftData.signature)
       console.log(`Succesfully posted tweet for ${nftData.signature}`)
     } catch (error) {
