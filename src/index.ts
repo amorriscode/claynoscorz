@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3000
 const app = express()
 app.use(express.json())
 
+const postedCache = new Set()
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
@@ -34,9 +35,14 @@ app.post('/helius', async (req, res) => {
         break
       }
 
+      if (postedCache.has(nftData.signature)) {
+        console.log(`Skipping previously posted sale: ${nftData.signature}`)
+        break
+      }
+
       const amount = nftData.amount / LAMPORTS_PER_SOL
       const nftAddress = nftData?.nfts?.[0]?.mint || null
-      const mintAddress = new PublicKey(nftAddress || '')
+      const mintAddress = new PublicKey(nftAddress)
       const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
       const nftImage = nft?.json?.image
 
@@ -67,6 +73,7 @@ app.post('/helius', async (req, res) => {
 
       try {
         await postTweet({ status: tweet.join(''), mediaId })
+        postedCache.add(nftData.signature)
         console.log(`Succesfully posted tweet for ${nftData.signature}`)
       } catch (error) {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
