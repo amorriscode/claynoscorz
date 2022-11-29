@@ -74,10 +74,9 @@ app.post('/helius', async (req, res) => {
     try {
       await postTweet({ status: tweet.join(''), mediaId })
       postedTransactions.add(nftData.signature)
+      console.log(`Succesfully posted tweet for ${nftData.signature}`)
     } catch (error) {
       console.error(`Failed to post tweet for ${nftData.signature}`)
-    } finally {
-      console.log(`Succesfully posted tweet for ${nftData.signature}`)
     }
   }
 
