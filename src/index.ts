@@ -72,11 +72,11 @@ app.post('/helius', async (req, res) => {
     }
 
     try {
-      await postTweet({ status: tweet.join(''), mediaId })
+      await postTweet({ status: tweet.join('') })
       postedTransactions.add(nftData.signature)
       console.log(`Succesfully posted tweet for ${nftData.signature}`)
     } catch (error) {
-      console.error(`Failed to post tweet for ${nftData.signature}`)
+      console.error(`Failed to post tweet for ${nftData.signature}:`, error)
     }
   }
 
@@ -88,5 +88,5 @@ app.get('/health', (req, res) => {
 })
 
 app.listen(PORT, () => {
-  console.log(`🚀 Claynoscores listening on ${HOST}:${PORT}`)
+  console.log(`🚀 Claynoscorz listening on ${HOST}:${PORT}`)
 })

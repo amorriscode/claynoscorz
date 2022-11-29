@@ -15,7 +15,8 @@
     "@solana/web3.js": "^1.66.2",
     "dotenv": "^16.0.3",
     "express": "^4.18.1",
-    "twitter-lite": "^1.1.0"
+    "oauth-1.0a": "^2.2.6",
+    "query-string": "^7.1.1"
   },
   "devDependencies": {
     "@types/arconnect": "^1.0.1",
