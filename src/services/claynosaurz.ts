@@ -1,20 +1,9 @@
-enum Species {
-  Ankylo,
-  Bronto,
-  Raptor,
-  Rex,
-  Trice,
-}
-
-enum TraitType {
-  Species,
-}
-
-type TraitValue = Species
+type TraitType = 'species'
+type TraitValue = 'raptor' | 'rex'
 
 export type Trait = {
   trait_type: string
-  value: string
+  value: TraitValue | string
 }
 
 function containsAttribute(
@@ -22,17 +11,18 @@ function containsAttribute(
   type: TraitType,
   value: TraitValue
 ) {
-  return attributes.some(
-    (trait) =>
+  return attributes.some((trait) => {
+    return (
       trait.trait_type.toLowerCase() === type.toString().toLowerCase() &&
       trait.value.toLowerCase() === value.toString().toLowerCase()
-  )
+    )
+  })
 }
 
 export function isRaptor(attributes: Trait[]) {
-  return containsAttribute(attributes, TraitType.Species, Species.Raptor)
+  return containsAttribute(attributes, 'species', 'raptor')
 }
 
 export function isRex(attributes: Trait[]) {
-  return containsAttribute(attributes, TraitType.Species, Species.Rex)
+  return containsAttribute(attributes, 'species', 'rex')
 }
