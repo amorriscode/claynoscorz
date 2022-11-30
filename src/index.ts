@@ -12,6 +12,8 @@ import { Metaplex } from '@metaplex-foundation/js'
 import { postTweet, uploadImage } from './services/twitter'
 import { HYPERSPACE_URL } from './constants'
 import { getSolPrice } from './services/solana'
+import { getSalesTweet } from './services/tweet'
+import { Trait } from './services/claynosaurz'
 
 const HOST = process.env.HOST || 'http://localhost'
 const PORT = process.env.PORT || 3000
@@ -54,10 +56,10 @@ app.post('/helius', async (req, res) => {
       const amount = nftData.amount / LAMPORTS_PER_SOL
       const mintAddress = new PublicKey(nftAddress)
       const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
-      const nftImage = nft?.json?.image
+      const { image, attributes, name } = nft?.json ?? {}
 
       // Build the main tweet which shares sales data
-      const tweet = [`RAAAWR 🦖\n\n${nft.json?.name} sold for ◎${amount}`]
+      const tweet = getSalesTweet(name, amount, attributes as Trait[])
 
       // Add the USD price if available
       if (solPrice) {
@@ -77,8 +79,8 @@ app.post('/helius', async (req, res) => {
 
       // Add an image if found
       let mediaId
-      if (nftImage) {
-        mediaId = await uploadImage(nftImage)
+      if (image) {
+        mediaId = await uploadImage(image)
       }
 
       try {
