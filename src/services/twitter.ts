@@ -77,8 +77,9 @@ export async function postTweet({
     getTwitterUrl({ endpoint: 'statuses/update.json' }),
     body
   )
-  if (response.status !== 200) {
-    throw new Error('Failed to post tweet', await response.json())
+  if (!response.ok) {
+    const data = await response.json()
+    throw new Error(data?.message ?? response.status)
   }
 
   return response

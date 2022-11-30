@@ -91,7 +91,7 @@ app.post('/helius', async (req, res) => {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
       }
     } catch (error) {
-      console.error('Failed to tweet webhook', error)
+      console.error('Failed to process webhook', error)
     }
   }
 
