@@ -32,3 +32,7 @@ function containsAttribute(
 export function isRaptor(attributes: Trait[]) {
   return containsAttribute(attributes, TraitType.Species, Species.Raptor)
 }
+
+export function isRex(attributes: Trait[]) {
+  return containsAttribute(attributes, TraitType.Species, Species.Rex)
+}

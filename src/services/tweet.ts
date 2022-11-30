@@ -1,10 +1,21 @@
-import { isRaptor, Trait } from './claynosaurz'
+import { isRaptor, isRex, Trait } from './claynosaurz'
+
+function getTweetHeader(attributes: Trait[] = []) {
+  if (isRaptor(attributes)) {
+    return 'wen @RaptorsDAO? 👀'
+  }
+
+  if (isRex(attributes)) {
+    return 'wen @REXyDAO? 🦖'
+  }
+
+  return 'Welcome to Claynotopia! 🌋'
+}
 
 export function getSalesTweet(
   claynoName = 'A Claynosaur',
   amount: number,
   attributes: Trait[] = []
 ) {
-  const header = isRaptor(attributes) ? '.@RaptorsDAO wen? 👀' : 'RAAAWR 🦖'
-  return [`${header}\n\n${claynoName} sold for ◎${amount}`]
+  return [`${getTweetHeader(attributes)}\n\n${claynoName} sold for ◎${amount}`]
 }
