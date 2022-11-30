@@ -1,19 +1,9 @@
 import * as dotenv from 'dotenv'
 dotenv.config()
 import express from 'express'
-import {
-  LAMPORTS_PER_SOL,
-  PublicKey,
-  Connection,
-  clusterApiUrl,
-} from '@solana/web3.js'
-import { Metaplex } from '@metaplex-foundation/js'
 
-import { postTweet, uploadImage } from './services/twitter'
-import { HYPERSPACE_URL } from './constants'
-import { getSolPrice } from './services/solana'
-import { getSalesTweet } from './services/tweet'
-import { Trait } from './services/claynosaurz'
+import { postTweet } from './services/twitter'
+import { buildTweet } from './services/tweet'
 
 const HOST = process.env.HOST || 'http://localhost'
 const PORT = process.env.PORT || 3000
@@ -22,12 +12,9 @@ const app = express()
 app.use(express.json())
 
 const postedCache = new Set()
-const connection = new Connection(clusterApiUrl('mainnet-beta'))
-const metaplex = new Metaplex(connection)
 
 app.post('/helius', async (req, res) => {
   const webhooks = req.body || []
-  const solPrice = await getSolPrice()
 
   console.log('Received incoming webook...')
 
@@ -44,44 +31,16 @@ app.post('/helius', async (req, res) => {
         break
       }
 
-      const nftAddress = nftData?.nfts?.[0]?.mint || null
-      if (!nftAddress) {
+      const nftPublicKey = nftData?.nfts?.[0]?.mint || null
+      if (!nftPublicKey) {
         console.error(
-          `Failed to get NFT address for ${webhook.signature}:`,
+          `Failed to get NFT public key for ${webhook.signature}:`,
           nftData
         )
         break
       }
 
-      const amount = nftData.amount / LAMPORTS_PER_SOL
-      const mintAddress = new PublicKey(nftAddress)
-      const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
-      const { image, attributes, name } = nft?.json ?? {}
-
-      // Build the main tweet which shares sales data
-      const tweet = getSalesTweet(name, amount, attributes as Trait[])
-
-      // Add the USD price if available
-      if (solPrice) {
-        tweet.push(` ($${(amount * solPrice).toFixed(2)} USD)`)
-      }
-
-      // Add the marketplace
-      if (nftData.source) {
-        const marketplace = nftData.source
-          .split('_')
-          .map((w: string) => w[0].toUpperCase() + w.substring(1).toLowerCase())
-          .join(' ')
-        tweet.push(` on ${marketplace} `)
-      }
-
-      tweet.push(`#SeizeTheClay\n\n${HYPERSPACE_URL}/token/${nft.address}`)
-
-      // Add an image if found
-      let mediaId
-      if (image) {
-        mediaId = await uploadImage(image)
-      }
+      const { tweet, mediaId } = await buildTweet(nftPublicKey, nftData)
 
       try {
         await postTweet({ status: tweet.join(''), mediaId })

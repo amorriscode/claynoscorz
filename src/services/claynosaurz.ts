@@ -1,12 +1,4 @@
-type Species = 'raptor' | 'rex' | 'bronto' | 'ankylo' | 'trice'
-
-type TraitType = 'species'
-type TraitValue = Species
-
-export type Trait = {
-  trait_type: string
-  value: TraitValue | string
-}
+import { Trait, TraitType, TraitValue } from '../types'
 
 function containsAttribute(
   attributes: Trait[],
