@@ -73,7 +73,15 @@ export async function postTweet({
     body.media_ids = mediaId
   }
 
-  return await post(getTwitterUrl({ endpoint: 'statuses/update.json' }), body)
+  const response = await post(
+    getTwitterUrl({ endpoint: 'statuses/update.json' }),
+    body
+  )
+  if (response.status !== 200) {
+    throw new Error('Failed to post tweet', await response.json())
+  }
+
+  return response
 }
 
 export async function uploadImage(sourceUrl: string) {
