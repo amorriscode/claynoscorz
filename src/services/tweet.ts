@@ -1,4 +1,11 @@
-import { isRaptor, isRex, isBronto, Trait } from './claynosaurz'
+import {
+  isRaptor,
+  isRex,
+  isBronto,
+  isAnkylo,
+  isTrice,
+  Trait,
+} from './claynosaurz'
 
 function getTweetHeader(attributes: Trait[] = []) {
   if (isRaptor(attributes)) {
@@ -11,6 +18,14 @@ function getTweetHeader(attributes: Trait[] = []) {
 
   if (isBronto(attributes)) {
     return 'wen @BrontoSquad? 🦕'
+  }
+
+  if (isAnkylo(attributes)) {
+    return 'wen @AnkyloDAO? 🥺'
+  }
+
+  if (isTrice(attributes)) {
+    return 'wen @Trice_Dao? 🥺'
   }
 
   return 'Welcome to Claynotopia! 🌋'

@@ -1,5 +1,7 @@
+type Species = 'raptor' | 'rex' | 'bronto' | 'ankylo' | 'trice'
+
 type TraitType = 'species'
-type TraitValue = 'raptor' | 'rex' | 'bronto'
+type TraitValue = Species
 
 export type Trait = {
   trait_type: string
@@ -29,4 +31,12 @@ export function isRex(attributes: Trait[]) {
 
 export function isBronto(attributes: Trait[]) {
   return containsAttribute(attributes, 'species', 'bronto')
+}
+
+export function isAnkylo(attributes: Trait[]) {
+  return containsAttribute(attributes, 'species', 'ankylo')
+}
+
+export function isTrice(attributes: Trait[]) {
+  return containsAttribute(attributes, 'species', 'trice')
 }
