@@ -7,7 +7,7 @@ import {
 } from '@solana/web3.js'
 import { HYPERSPACE_URL } from '../constants'
 
-import { Trait } from '../types'
+import { NftData, Trait } from '../types'
 import { isRaptor, isRex, isBronto, isAnkylo, isTrice } from './claynosaurz'
 import { getSolPrice } from './solana'
 import { uploadImage } from './twitter'
@@ -15,7 +15,7 @@ import { uploadImage } from './twitter'
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
-function getTweetHeader(attributes: Trait[] = []) {
+function getDaoShoutout(attributes: Trait[] = []) {
   if (isRaptor(attributes)) {
     return 'wen @RaptorsDAO? 👀'
   }
@@ -36,30 +36,20 @@ function getTweetHeader(attributes: Trait[] = []) {
     return 'wen @Trice_Dao? 🥺'
   }
 
-  return 'Welcome to Claynotopia! 🌋'
+  return
 }
 
-export function getSalesTweet(
+export async function getSalesTweet(
   claynoName = 'A Claynosaur',
   amount: number,
-  attributes: Trait[] = []
+  nftData: NftData
 ) {
-  return [`${getTweetHeader(attributes)}\n\n${claynoName} sold for ◎${amount}`]
-}
-
-export async function buildTweet(nftPublicKey: string, nftData: any) {
-  const amount = nftData.amount / LAMPORTS_PER_SOL
-  const mintAddress = new PublicKey(nftPublicKey)
-  const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
-  const { image, attributes, name } = nft?.json ?? {}
-
-  // Build the main tweet which shares sales data
-  const tweet = getSalesTweet(name, amount, attributes as Trait[])
+  const salesTweet = [`${claynoName} sold for ◎${amount}`]
 
   // Add the USD price if available
   const solPrice = await getSolPrice()
   if (solPrice) {
-    tweet.push(` ($${(amount * solPrice).toFixed(2)} USD)`)
+    salesTweet.push(`($${(amount * solPrice).toFixed(2)} USD)`)
   }
 
   // Add the marketplace
@@ -68,12 +58,33 @@ export async function buildTweet(nftPublicKey: string, nftData: any) {
       .split('_')
       .map((w: string) => w[0].toUpperCase() + w.substring(1).toLowerCase())
       .join(' ')
-    tweet.push(` on ${marketplace} `)
+    salesTweet.push(`on ${marketplace}`)
   }
 
-  tweet.push(`#SeizeTheClay\n\n${HYPERSPACE_URL}/token/${nft.address}`)
+  return salesTweet.join(' ')
+}
 
-  // Add an image if found
+export async function buildTweet(nftPublicKey: string, nftData: NftData) {
+  const amount = nftData.amount / LAMPORTS_PER_SOL
+  const mintAddress = new PublicKey(nftPublicKey)
+  const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
+  const { image, attributes, name } = nft?.json ?? {}
+
+  const tweet = ['Welcome to Claynotopia! 🌋 #SeizeTheClay\n\n']
+
+  // Build the main tweet which shares sales data
+  tweet.push(await getSalesTweet(name, amount, nftData))
+
+  // Add DAO shoutout
+  const daoShoutout = await getDaoShoutout(attributes as Trait[])
+  if (daoShoutout) {
+    tweet.push(`\n\n${daoShoutout}`)
+  }
+
+  // Add the Hyperspace link
+  tweet.push(`\n\n${HYPERSPACE_URL}/token/${nft.address}`)
+
+  // Upload an image if found
   let mediaId
   if (image) {
     mediaId = await uploadImage(image)
