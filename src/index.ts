@@ -4,14 +4,15 @@ import express from 'express'
 
 import { postTweet } from './services/twitter'
 import { buildTweet } from './services/tweet'
+import Cache from './services/cache'
 
-const HOST = process.env.HOST || 'http://localhost'
-const PORT = process.env.PORT || 3000
+const HOST = process.env.HOST ?? 'http://localhost'
+const PORT = process.env.PORT ?? 3000
 
 const app = express()
 app.use(express.json())
 
-const postedCache = new Set()
+const postedCache = new Cache()
 
 app.post('/helius', async (req, res) => {
   const webhooks = req.body || []
@@ -27,7 +28,7 @@ app.post('/helius', async (req, res) => {
         break
       }
 
-      if (postedCache.has(nftData.signature)) {
+      if (await postedCache.get(nftData.signature)) {
         console.log(`Skipping previously posted sale: ${nftData.signature}`)
         break
       }
@@ -44,8 +45,9 @@ app.post('/helius', async (req, res) => {
       const { tweet, mediaId } = await buildTweet(nftPublicKey, nftData)
 
       try {
-        await postTweet({ status: tweet.join(''), mediaId })
-        postedCache.add(nftData.signature)
+        const status = tweet.join('')
+        await postTweet({ status, mediaId })
+        await postedCache.set(nftData.signature, status)
         console.log(`Succesfully posted tweet for ${nftData.signature}`)
       } catch (error) {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
@@ -59,6 +61,7 @@ app.post('/helius', async (req, res) => {
 
   console.log('Finished processing incoming webhook...')
   res.status(status)
+  res.send('ok')
 })
 
 app.get('/health', (req, res) => {
