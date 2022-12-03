@@ -2,9 +2,8 @@ import fetch from 'node-fetch'
 import crypto from 'crypto'
 import OAuth from 'oauth-1.0a'
 import querystring from 'query-string'
-import { Readable } from 'stream'
 
-const MAX_FILE_CHUNK = 5 * 1024 * 1024
+const MAX_FILE_CHUNK = 3 * 1024 * 1024
 
 const CONFIG = {
   consumerKey: process.env.TWITTER_API_KEY || '',
@@ -112,6 +111,7 @@ export async function uploadImage(sourceUrl: string) {
     })
     const imageData = await fetch(sourceUrl)
     const imageBuffer = await imageData.buffer()
+    const imageSize = Buffer.byteLength(imageBuffer)
 
     const initResponse = await post(twitterUrl, {
       command: 'INIT',
@@ -124,14 +124,15 @@ export async function uploadImage(sourceUrl: string) {
 
     console.log('Initialized Twitter media: ', JSON.stringify(initData))
 
-    const readable = Readable.from(imageBuffer)
-    let buf
+    let offset = 0
     const partitions = []
-    while (
-      (buf = readable.read(Math.min(MAX_FILE_CHUNK, imageBuffer.length)))
-    ) {
-      partitions.push(buf)
+    while (offset !== imageSize) {
+      const data = imageBuffer.slice(offset, offset + MAX_FILE_CHUNK)
+      partitions.push(data)
+      offset += Buffer.byteLength(data)
     }
+    const finalChunk = imageBuffer.slice(offset)
+    partitions.push(finalChunk)
 
     for (let i = 0; i < partitions.length; i++) {
       await post(
