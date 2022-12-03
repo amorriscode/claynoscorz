@@ -82,9 +82,18 @@ export async function postTweet({
   if (!response.ok) {
     const data = await response.json()
     const errorCode = data?.errors?.[0]?.code
-    const errorMessage = data?.errors?.[0]?.message
+    const errorMessage = data?.errors?.[0]?.message ?? ''
+
+    // Post tweet without media ID until we resolve the Twitter issue
+    if (errorMessage.includes('Invalid media id')) {
+      console.log(
+        `Posting tweet without media (${mediaId}) due to Twitter error`
+      )
+      return await postTweet({ status })
+    }
+
     throw new Error(
-      `${errorMessage}${errorCode && '(' + errorCode + ')'}` ?? response.status
+      `${errorMessage}${errorCode && ' (' + errorCode + ')'}` ?? response.status
     )
   }
 
@@ -108,6 +117,11 @@ export async function uploadImage(sourceUrl: string) {
     })
     const data = await initResponse.json()
     const mediaId = data.media_id_string
+
+    console.log(
+      `Successfully initialized Twitter media: `,
+      JSON.stringify(data)
+    )
 
     const readable = Readable.from(imageBuffer)
     let buf
