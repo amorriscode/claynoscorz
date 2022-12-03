@@ -89,10 +89,7 @@ export async function postTweet({
       console.log(
         `Posting tweet without media (${mediaId}) due to Twitter error`
       )
-      response = await post(
-        getTwitterUrl({ endpoint: 'statuses/update.json' }),
-        { status }
-      )
+      response = await postTweet({ status })
     }
 
     throw new Error(
