@@ -88,7 +88,7 @@ export async function postTweet({
 
   console.log(`Attempting to post tweet: `, JSON.stringify(body))
 
-  let response = await post(
+  const response = await post(
     getTwitterUrl({ endpoint: 'statuses/update.json' }),
     body
   )
@@ -96,15 +96,6 @@ export async function postTweet({
     const data = await response.json()
     const errorCode = data?.errors?.[0]?.code
     const errorMessage = data?.errors?.[0]?.message ?? ''
-
-    // Post tweet without media ID until we resolve the Twitter issue
-    if (errorMessage.includes('Invalid media id')) {
-      console.log(
-        `Posting tweet without media (${mediaId}) due to Twitter error`
-      )
-      response = await postTweet({ status })
-    }
-
     throw new Error(
       `${errorMessage}${errorCode && ' (' + errorCode + ')'}` ?? response.status
     )
