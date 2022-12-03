@@ -18,6 +18,7 @@ app.post('/helius', async (req, res) => {
 
   console.log('Received incoming webook...')
 
+  let status = 200
   for (const webhook of webhooks) {
     try {
       const nftData = webhook?.events?.nft
@@ -48,14 +49,16 @@ app.post('/helius', async (req, res) => {
         console.log(`Succesfully posted tweet for ${nftData.signature}`)
       } catch (error) {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
+        status = 500
       }
     } catch (error) {
       console.error('Failed to process webhook', error)
+      status = 500
     }
   }
 
   console.log('Finished processing incoming webhook...')
-  res.send('ok')
+  res.status(status)
 })
 
 app.get('/health', (req, res) => {
