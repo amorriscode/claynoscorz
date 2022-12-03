@@ -16,4 +16,10 @@ export default class Cache {
   async set(key: string, data: string | number) {
     return await this.cache.set(key, data)
   }
+
+  async delete(key: string) {
+    return this.cache instanceof Redis
+      ? await this.cache.del(key)
+      : this.cache.delete(key)
+  }
 }

@@ -33,6 +33,9 @@ app.post('/helius', async (req, res) => {
         break
       }
 
+      // Put NFT in cache to avoid duplicate processing
+      await postedCache.set(nftData.signature, 'pending')
+
       const nftPublicKey = nftData?.nfts?.[0]?.mint || null
       if (!nftPublicKey) {
         console.error(
@@ -49,8 +52,15 @@ app.post('/helius', async (req, res) => {
         await postTweet({ status, mediaId })
         await postedCache.set(nftData.signature, status)
         console.log(`Succesfully posted tweet for ${nftData.signature}`)
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Failed to post tweet for ${nftData.signature}:`, error)
+
+        // Remove the event from the cache unless it was caused
+        // by an attempt to post a duplicate on Twitter
+        if (!error?.includes('duplicate')) {
+          await postedCache.delete(nftData.signature)
+        }
+
         status = 500
       }
     } catch (error) {
