@@ -73,13 +73,15 @@ export async function postTweet({
     body.media_ids = mediaId
   }
 
+  console.log(`Attempting to post tweet: `, JSON.stringify(body))
+
   const response = await post(
     getTwitterUrl({ endpoint: 'statuses/update.json' }),
     body
   )
   if (!response.ok) {
     const data = await response.json()
-    throw new Error(data?.message ?? response.status)
+    throw new Error(data?.error ?? data?.message ?? response.status)
   }
 
   return response
