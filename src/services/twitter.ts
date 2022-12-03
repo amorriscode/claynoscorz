@@ -37,6 +37,19 @@ function createOauthClient() {
   return client
 }
 
+async function get(url: string, headers: any = {}) {
+  const method = 'GET'
+  const requestData = { url, method }
+  const oauthClient = createOauthClient()
+
+  const requestHeaders = {
+    ...headers,
+    ...oauthClient.toHeader(oauthClient.authorize(requestData, CONFIG.token)),
+  }
+
+  return await fetch(url, { method, headers: requestHeaders })
+}
+
 async function post(url: string, data: any = {}, headers: any = {}) {
   const method = 'POST'
   const requestData = { url, method, data }
@@ -115,13 +128,10 @@ export async function uploadImage(sourceUrl: string) {
       media_type: 'image/gif',
       media_category: 'tweet_gif',
     })
-    const data = await initResponse.json()
-    const mediaId = data.media_id_string
+    const initData = await initResponse.json()
+    const mediaId = initData.media_id_string
 
-    console.log(
-      `Successfully initialized Twitter media: `,
-      JSON.stringify(data)
-    )
+    console.log('Initialized Twitter media: ', JSON.stringify(initData))
 
     const readable = Readable.from(imageBuffer)
     let buf
@@ -148,12 +158,35 @@ export async function uploadImage(sourceUrl: string) {
       )
     }
 
-    await post(twitterUrl, {
+    const finalizeResponse = await post(twitterUrl, {
       command: 'FINALIZE',
       media_id: mediaId,
     })
+    const finalizeData = await finalizeResponse.json()
 
-    return mediaId
+    // Wait until Twitter is done processing the image
+    let state = finalizeData?.processing_info?.state
+    if (finalizeData.processing_info) {
+      console.log(`Waiting for Twitter media to finish, state is: ${state}`)
+
+      let checkAfter = finalizeData.check_after_secs
+      while (state === 'pending' || state === 'in_progress') {
+        // Sleep for N milliseconds
+        await new Promise((resolve) => setTimeout(resolve, checkAfter * 1000))
+
+        const statusResponse = await get(
+          `${twitterUrl}?command=STATUS&media_id=${mediaId}`
+        )
+        const statusData = await statusResponse.json()
+
+        state = statusData?.processing_info?.state ?? 'failed'
+        checkAfter = statusData?.processing_info?.check_after_secs
+      }
+
+      console.log(`Finished processing Twitter image, final status: ${state}`)
+    }
+
+    return state === 'failed' ? null : mediaId
   } catch (error) {
     console.error('Failed to upload image to Twitter:', error)
   }
