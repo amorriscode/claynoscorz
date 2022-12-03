@@ -81,7 +81,7 @@ export async function postTweet({
   )
   if (!response.ok) {
     const data = await response.json()
-    throw new Error(data?.error ?? data?.message ?? response.status)
+    throw new Error(data?.errors?.[0]?.message ?? response.status)
   }
 
   return response
