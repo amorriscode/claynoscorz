@@ -75,7 +75,7 @@ export async function postTweet({
 
   console.log(`Attempting to post tweet: `, JSON.stringify(body))
 
-  const response = await post(
+  let response = await post(
     getTwitterUrl({ endpoint: 'statuses/update.json' }),
     body
   )
@@ -89,7 +89,10 @@ export async function postTweet({
       console.log(
         `Posting tweet without media (${mediaId}) due to Twitter error`
       )
-      return await postTweet({ status })
+      response = await post(
+        getTwitterUrl({ endpoint: 'statuses/update.json' }),
+        { status }
+      )
     }
 
     throw new Error(
