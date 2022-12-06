@@ -12,8 +12,9 @@ const PORT = process.env.PORT ?? 3000
 const app = express()
 app.use(express.json())
 
+const postedCache = new Cache()
+
 app.post('/helius', async (req, res) => {
-  const postedCache = new Cache()
   const webhooks = req.body || []
 
   console.log('Received incoming webook...')
