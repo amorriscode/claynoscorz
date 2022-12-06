@@ -58,6 +58,9 @@ app.post('/helius', async (req, res) => {
         // Remove the event from the cache unless it was caused
         // by an attempt to post a duplicate on Twitter
         if (!error?.includes('duplicate')) {
+          console.log(
+            `Deleting ${nftData.signature} from the cache due to encountered error`
+          )
           await postedCache.delete(nftData.signature)
         }
 
