@@ -8,35 +8,55 @@ import {
 import { HYPERSPACE_URL } from '../constants'
 
 import { NftData, Trait } from '../types'
-import { isRaptor, isRex, isBronto, isAnkylo, isTrice } from './claynosaurz'
+import {
+  isRaptor,
+  isRex,
+  isBronto,
+  isAnkylo,
+  isTrice,
+  isLayerZero,
+  isApres,
+} from './claynosaurz'
 import { getSolPrice } from './solana'
 import { uploadImage } from './twitter'
 
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
-function getDaoShoutout(attributes: Trait[] = []) {
+function getDaoShoutout(attributes: Trait[] = []): string | undefined {
+  const daoShoutouts: string[] = []
+
+  if (isLayerZero(attributes)) {
+    daoShoutouts.push('wen @NakedClayno? 🫣')
+    daoShoutouts.push('wen @0LayerDAO? 😳')
+  }
+
+  if (isApres(attributes)) {
+    daoShoutouts.push('wen @ApresDAO? ⛷️')
+  }
+
+  // Species DAOs
   if (isRaptor(attributes)) {
-    return 'wen @RaptorsDAO? 👀'
+    daoShoutouts.push('wen @RaptorsDAO? 👀')
   }
 
   if (isRex(attributes)) {
-    return 'wen @REXyDAO? 🦖'
+    daoShoutouts.push('wen @REXyDAO? 🦖')
   }
 
   if (isBronto(attributes)) {
-    return 'wen @BrontoSquad? 🦕'
+    daoShoutouts.push('wen @BrontoSquad? 🦕')
   }
 
   if (isAnkylo(attributes)) {
-    return 'wen @AnkyloDAO? 🥺'
+    daoShoutouts.push('wen @AnkyloDAO? 🥺')
   }
 
   if (isTrice(attributes)) {
-    return 'wen @Trice_Dao? 🥺'
+    daoShoutouts.push('wen @Trice_Dao? 🤩')
   }
 
-  return
+  return daoShoutouts[Math.floor(Math.random() * daoShoutouts.length)]
 }
 
 export async function getSalesTweet(

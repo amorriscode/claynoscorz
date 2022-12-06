@@ -32,3 +32,11 @@ export function isAnkylo(attributes: Trait[]) {
 export function isTrice(attributes: Trait[]) {
   return containsAttribute(attributes, 'species', 'trice')
 }
+
+export function isLayerZero(attributes: Trait[]) {
+  return containsAttribute(attributes, 'layer count', '0')
+}
+
+export function isApres(attributes: Trait[]) {
+  return containsAttribute(attributes, 'skin', 'apres')
+}
