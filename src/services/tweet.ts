@@ -28,7 +28,6 @@ function getDaoShoutout(attributes: Trait[] = []): string | undefined {
 
   if (isLayerZero(attributes)) {
     daoShoutouts.push('wen @NakedClayno? 🫣')
-    daoShoutouts.push('wen @0LayerDAO? 😳')
   }
 
   if (isApres(attributes)) {
