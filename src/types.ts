@@ -1,6 +1,6 @@
 export type CoinGeckoPriceResponse = { solana: { usd: number } }
 
-export type Species = 'raptor' | 'rex' | 'bronto' | 'ankylo' | 'trice'
+export type Species = 'raptor' | 'rex' | 'bronto' | 'ankylo' | 'trice' | 'stego'
 export type LayerCount = '0'
 export type Skin = 'apres'
 

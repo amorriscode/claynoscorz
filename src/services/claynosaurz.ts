@@ -29,6 +29,10 @@ export function isAnkylo(attributes: Trait[]) {
   return containsAttribute(attributes, 'species', 'ankylo')
 }
 
+export function isStego(attributes: Trait[]) {
+  return containsAttribute(attributes, 'species', 'stego')
+}
+
 export function isTrice(attributes: Trait[]) {
   return containsAttribute(attributes, 'species', 'trice')
 }

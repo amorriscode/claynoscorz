@@ -16,6 +16,7 @@ import {
   isTrice,
   isLayerZero,
   isApres,
+  isStego,
 } from './claynosaurz'
 import { getSolPrice } from './solana'
 import { uploadImage } from './twitter'
@@ -53,6 +54,10 @@ function getDaoShoutout(attributes: Trait[] = []): string | undefined {
 
   if (isTrice(attributes)) {
     daoShoutouts.push('wen @Trice_Dao? 🤩')
+  }
+
+  if (isStego(attributes)) {
+    daoShoutouts.push('wen @StegoDAO? 🫡')
   }
 
   return daoShoutouts[Math.floor(Math.random() * daoShoutouts.length)]
