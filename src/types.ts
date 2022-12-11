@@ -26,3 +26,9 @@ export type NftData = {
   source: string
   fee: number
 }
+
+export type AccountData = {
+  account: string
+  nativeBalanceChange: number
+  tokenBalanceChanges: any[]
+}

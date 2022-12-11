@@ -1,5 +1,8 @@
 import { Trait, TraitType, TraitValue } from '../types'
 
+export const ROYALTY_ACCOUNT_ADDRESS =
+  '36tfiBtaDGjAMKd6smPacHQhe4MXycLL6f9ww9CD1naT'
+
 function containsAttribute(
   attributes: Trait[],
   type: TraitType,

@@ -7,7 +7,7 @@ import {
 } from '@solana/web3.js'
 import { HYPERSPACE_URL } from '../constants'
 
-import { NftData, Trait } from '../types'
+import { AccountData, NftData, Trait } from '../types'
 import {
   isRaptor,
   isRex,
@@ -17,6 +17,7 @@ import {
   isLayerZero,
   isApres,
   isStego,
+  ROYALTY_ACCOUNT_ADDRESS,
 } from './claynosaurz'
 import { getSolPrice } from './solana'
 import { uploadImage } from './twitter'
@@ -63,6 +64,21 @@ function getDaoShoutout(attributes: Trait[] = []): string | undefined {
   return daoShoutouts[Math.floor(Math.random() * daoShoutouts.length)]
 }
 
+function getRoyaltyMessage(accountData: AccountData[]) {
+  const royaltyAccount = accountData.find(
+    (data) => data?.account === ROYALTY_ACCOUNT_ADDRESS
+  )
+  const royaltyPaid = royaltyAccount?.nativeBalanceChange ?? 0
+  const royaltyMessage =
+    royaltyPaid > 0
+      ? `◎${royaltyPaid / LAMPORTS_PER_SOL} paid in royalties 🥳`
+      : 'Uh oh... no royalties paid 🤡'
+
+  console.log({ royaltyAccount, royaltyMessage })
+
+  return
+}
+
 export async function getSalesTweet(
   claynoName = 'A Claynosaur',
   amount: number,
@@ -88,7 +104,11 @@ export async function getSalesTweet(
   return salesTweet.join(' ')
 }
 
-export async function buildTweet(nftPublicKey: string, nftData: NftData) {
+export async function buildTweet(
+  nftPublicKey: string,
+  nftData: NftData,
+  accountData: AccountData[]
+) {
   const amount = nftData.amount / LAMPORTS_PER_SOL
   const mintAddress = new PublicKey(nftPublicKey)
   const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
@@ -104,6 +124,8 @@ export async function buildTweet(nftPublicKey: string, nftData: NftData) {
   if (daoShoutout) {
     tweet.push(`\n\n${daoShoutout}`)
   }
+
+  const royaltyInfo = await getRoyaltyMessage(accountData)
 
   // Add the Hyperspace link
   tweet.push(`\n\n${HYPERSPACE_URL}/token/${nft.address}`)
