@@ -71,12 +71,10 @@ function getRoyaltyMessage(accountData: AccountData[]) {
   const royaltyPaid = royaltyAccount?.nativeBalanceChange ?? 0
   const royaltyMessage =
     royaltyPaid > 0
-      ? `◎${royaltyPaid / LAMPORTS_PER_SOL} paid in royalties 🥳`
-      : 'Uh oh... no royalties paid 🤡'
+      ? `◎${royaltyPaid / LAMPORTS_PER_SOL} paid in royalties 🤝`
+      : "Uh oh... someone didn't pay any royalties 🤡"
 
-  console.log({ royaltyAccount, royaltyMessage })
-
-  return
+  return royaltyMessage
 }
 
 export async function getSalesTweet(
@@ -119,13 +117,14 @@ export async function buildTweet(
   // Build the main tweet which shares sales data
   tweet.push(await getSalesTweet(name, amount, nftData))
 
+  const royaltyInfo = await getRoyaltyMessage(accountData)
+  tweet.push(`\n\n${royaltyInfo}`)
+
   // Add DAO shoutout
   const daoShoutout = await getDaoShoutout(attributes as Trait[])
   if (daoShoutout) {
     tweet.push(`\n\n${daoShoutout}`)
   }
-
-  const royaltyInfo = await getRoyaltyMessage(accountData)
 
   // Add the Hyperspace link
   tweet.push(`\n\n${HYPERSPACE_URL}/token/${nft.address}`)
