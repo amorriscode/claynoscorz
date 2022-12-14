@@ -72,7 +72,7 @@ function getRoyaltyMessage(accountData: AccountData[]) {
   const royaltyMessage =
     royaltyPaid > 0
       ? `◎${royaltyPaid / LAMPORTS_PER_SOL} paid in royalties 🤝`
-      : "Uh oh... someone didn't pay royalties 🤡"
+      : 'Uh oh... someone forgot to pay royalties 😭'
 
   return royaltyMessage
 }
