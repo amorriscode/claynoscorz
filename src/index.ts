@@ -22,7 +22,6 @@ app.post('/helius', async (req, res) => {
   let status = 200
   for (const webhook of webhooks) {
     try {
-      const accountData = webhook?.accountData
       const nftData = webhook?.events?.nft
 
       if (!nftData) {
@@ -47,11 +46,7 @@ app.post('/helius', async (req, res) => {
         break
       }
 
-      const { tweet, mediaId } = await buildTweet(
-        nftPublicKey,
-        nftData,
-        accountData
-      )
+      const { tweet, mediaId } = await buildTweet(nftPublicKey, nftData)
 
       try {
         const status = tweet.join('')

@@ -1,4 +1,8 @@
-export type CoinGeckoPriceResponse = { solana: { usd: number } }
+export type CoinGeckoCoin = 'solana' | 'ethereum'
+
+export type CoinGeckoPriceResponse = {
+  [K in CoinGeckoCoin]: { usd: number }
+}
 
 export type Species = 'raptor' | 'rex' | 'bronto' | 'ankylo' | 'trice' | 'stego'
 export type LayerCount = '0'

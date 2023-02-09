@@ -7,88 +7,39 @@ import {
 } from '@solana/web3.js'
 import { HYPERSPACE_URL } from '../constants'
 
-import { AccountData, NftData, Trait } from '../types'
-import {
-  isRaptor,
-  isRex,
-  isBronto,
-  isAnkylo,
-  isTrice,
-  isLayerZero,
-  isApres,
-  isStego,
-  ROYALTY_ACCOUNT_ADDRESS,
-} from './claynosaurz'
-import { getSolPrice } from './solana'
+import { NftData } from '../types'
+import { getSolPrice, getEthPrice } from './coingecko'
 import { uploadImage } from './twitter'
 
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
-function getDaoShoutout(attributes: Trait[] = []): string | undefined {
-  const daoShoutouts: string[] = []
-
-  if (isLayerZero(attributes)) {
-    daoShoutouts.push('wen @NakedClayno? 🫣')
-  }
-
-  if (isApres(attributes)) {
-    daoShoutouts.push('wen @ApresDAO? ⛷️')
-  }
-
-  // Species DAOs
-  if (isRaptor(attributes)) {
-    daoShoutouts.push('wen @RaptorsDAO? 👀')
-  }
-
-  if (isRex(attributes)) {
-    daoShoutouts.push('wen @REXyDAO? 🦖')
-  }
-
-  if (isBronto(attributes)) {
-    daoShoutouts.push('wen @BrontoSquad? 🦕')
-  }
-
-  if (isAnkylo(attributes)) {
-    daoShoutouts.push('wen @AnkyloDAO? 🥺')
-  }
-
-  if (isTrice(attributes)) {
-    daoShoutouts.push('wen @Trice_Dao? 🤩')
-  }
-
-  if (isStego(attributes)) {
-    daoShoutouts.push('wen @StegoDAO? 🫡')
-  }
-
-  return daoShoutouts[Math.floor(Math.random() * daoShoutouts.length)]
-}
-
-function getRoyaltyMessage(accountData: AccountData[]) {
-  const royaltyAccount = accountData.find(
-    (data) => data?.account === ROYALTY_ACCOUNT_ADDRESS
-  )
-  const royaltyPaid = royaltyAccount?.nativeBalanceChange ?? 0
-  const royaltyMessage =
-    royaltyPaid > 0
-      ? `◎${royaltyPaid / LAMPORTS_PER_SOL} paid in royalties 🤝`
-      : 'Uh oh... someone forgot to pay royalties 😭'
-
-  return royaltyMessage
-}
-
-export async function getSalesTweet(
-  claynoName = 'A Claynosaur',
-  amount: number,
-  nftData: NftData
-) {
-  const salesTweet = [`${claynoName} sold for ◎${amount}`]
+export async function getPriceTweet(amount: number) {
+  const priceTweet = [`${amount.toFixed(4)} SOL`]
 
   // Add the USD price if available
-  const solPrice = await getSolPrice()
-  if (solPrice) {
-    salesTweet.push(`($${(amount * solPrice).toFixed(2)} USD)`)
+  const solUsdPrice = await getSolPrice()
+  const ethUsdPrice = await getEthPrice()
+
+  if (solUsdPrice) {
+    const usdPrice = amount * solUsdPrice
+
+    if (ethUsdPrice) {
+      const ethPrice = usdPrice / ethUsdPrice
+      priceTweet.push(`${ethPrice.toFixed(4)} ETH`)
+    }
+
+    priceTweet.push(`$${usdPrice.toFixed(2)}`)
   }
+
+  return priceTweet.join(' | ')
+}
+
+export async function getMarketplaceTweet(
+  claynoName = 'A Claynosaur',
+  nftData: NftData
+) {
+  const marketplaceTweet = [`${claynoName} sold`]
 
   // Add the marketplace
   if (nftData.source) {
@@ -96,35 +47,28 @@ export async function getSalesTweet(
       .split('_')
       .map((w: string) => w[0].toUpperCase() + w.substring(1).toLowerCase())
       .join(' ')
-    salesTweet.push(`on ${marketplace}`)
+    marketplaceTweet.push(`on ${marketplace}`)
   }
 
-  return salesTweet.join(' ')
+  marketplaceTweet.push('for:\n\n')
+
+  return marketplaceTweet.join(' ')
 }
 
-export async function buildTweet(
-  nftPublicKey: string,
-  nftData: NftData,
-  accountData: AccountData[]
-) {
+export async function buildTweet(nftPublicKey: string, nftData: NftData) {
   const amount = nftData.amount / LAMPORTS_PER_SOL
   const mintAddress = new PublicKey(nftPublicKey)
   const nft = await metaplex?.nfts()?.findByMint({ mintAddress })
-  const { image, attributes, name } = nft?.json ?? {}
+  const { image, name = 'A Claynosaur' } = nft?.json ?? {}
 
-  const tweet = ['Welcome to Claynotopia! 🌋 #SeizeTheClay\n\n']
+  const tweet = []
 
-  // Build the main tweet which shares sales data
-  tweet.push(await getSalesTweet(name, amount, nftData))
+  // Build the main tweet
+  tweet.push(await getMarketplaceTweet(name, nftData))
 
-  const royaltyInfo = await getRoyaltyMessage(accountData)
-  tweet.push(`\n\n${royaltyInfo}`)
+  tweet.push(`\n\n${await getPriceTweet(amount)}`)
 
-  // Add DAO shoutout
-  const daoShoutout = await getDaoShoutout(attributes as Trait[])
-  if (daoShoutout) {
-    tweet.push(`\n\n${daoShoutout}`)
-  }
+  tweet.push('\n\nWelcome to Claynotopia! 🌋\n\n#SeizeTheClay')
 
   // Add the Hyperspace link
   tweet.push(`\n\n${HYPERSPACE_URL}/token/${nft.address}`)
