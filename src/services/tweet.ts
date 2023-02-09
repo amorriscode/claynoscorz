@@ -14,8 +14,12 @@ import { uploadImage } from './twitter'
 const connection = new Connection(clusterApiUrl('mainnet-beta'))
 const metaplex = new Metaplex(connection)
 
+function roundedCryptoPrice(amount: number) {
+  return Number(amount.toFixed(4))
+}
+
 export async function getPriceTweet(amount: number) {
-  const priceTweet = [`${amount.toFixed(4)} SOL`]
+  const priceTweet = [`${roundedCryptoPrice(amount)} SOL`]
 
   // Add the USD price if available
   const solUsdPrice = await getSolPrice()
@@ -26,7 +30,7 @@ export async function getPriceTweet(amount: number) {
 
     if (ethUsdPrice) {
       const ethPrice = usdPrice / ethUsdPrice
-      priceTweet.push(`${ethPrice.toFixed(4)} ETH`)
+      priceTweet.push(`${roundedCryptoPrice(ethPrice)} ETH`)
     }
 
     priceTweet.push(`$${usdPrice.toFixed(2)}`)
